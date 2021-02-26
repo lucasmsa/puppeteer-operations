@@ -61,7 +61,6 @@ const loginToGoogle = async (browser, page) => {
     page.click('.VfPpkd-Jh9lGc')
   ])
   await page.waitForTimeout(1000)
-  console.log(page.url())
   await page.type('input[type=password][name=password]', process.env.PASSWORD)
   await page.click('.VfPpkd-RLmnJb')
 }
@@ -73,11 +72,12 @@ const handleXPathOperation = async (xpath, page, text='') => {
   else {
     await handler[0].focus()
     await page.waitForTimeout(500)
-    await handler[0].type(text, {delay: 100})
+    await handler[0].type(text, {delay: 20})
   }
 }
 
 const setDateAndEventName = async (page) => {
+  await page.waitForTimeout(500)
   await handleXPathOperation(
     `/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[1]/div/div/div[2]/div[1]/div/span/span`, 
     page
@@ -92,7 +92,6 @@ const setDateAndEventName = async (page) => {
     page,
     `${eventName}`
   )
-  await page.waitForTimeout(2000)
 }
 
 const setBegginingAndEndHours = async (page) => {
