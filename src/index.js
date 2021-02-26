@@ -66,30 +66,53 @@ const loginToGoogle = async (browser, page) => {
   await page.click('.VfPpkd-RLmnJb')
 }
 
+const handleXPathOperation = async (xpath, page, text='') => { 
+  await page.waitForXPath(xpath)
+  let handler = await page.$x(xpath)
+  if (!text.length) await handler[0].click()
+  else {
+    await handler[0].focus()
+    await page.waitForTimeout(500)
+    await handler[0].type(text, {delay: 100})
+  }
+}
+
 const setDateAndEventName = async (page) => {
-  await page.waitForTimeout(3000)
-  let calendarDateTimeHandler = await page.$x(`/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[1]/div/div/div[2]/div[1]/div/span/span`)
-  await page.evaluate(el => el.click(), calendarDateTimeHandler[0])
-  let dateHandler = await page.$x(`/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[2]/div/div[1]/div/div[2]/div/div[1]/div[1]/div/label/div[1]/div/input`)
-  await page.evaluate((el, date) => { el.value = `Sábado, ${date.day} de ${date.month}` }, dateHandler[0], date)
-  let eventNameHandler = await page.$x(`/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[1]/div/div[1]/div/div[1]/input`)
-  await page.evaluate((el, name) => { el.value = `${name}` }, eventNameHandler[0], eventName)
-  await page.evaluate(el => { el.click() }, eventNameHandler[0])
+  await handleXPathOperation(
+    `/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[1]/div/div/div[2]/div[1]/div/span/span`, 
+    page
+  )
+  await handleXPathOperation(
+    `/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[2]/div/div[1]/div/div[2]/div/div[1]/div[1]/div/label/div[1]/div/input`,
+    page,
+    `${date}`
+  )
+  await handleXPathOperation(
+    `/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[1]/div/div[1]/div/div[1]/input`,
+    page,
+    `${eventName}`
+  )
+  await page.waitForTimeout(2000)
 }
 
 const setBegginingAndEndHours = async (page) => {
-  await page.waitForTimeout(3000)
-  let begginingHourHandler = await page.$x(`/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[2]/div/div[1]/div/div[2]/div/div[2]/div[1]/div[1]/div/label/div[1]/div/input`)
-  await page.evaluate((el, hour) => { el.value = `${hour}`}, begginingHourHandler[0], hour.beggining)
-  let endHourHandler = await page.$x(`/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[2]/div/div[1]/div/div[2]/div/div[2]/div[2]/div[1]/div/label/div[1]/div/input`)
-  await page.evaluate((el, hour) => { el.value = `${hour}` }, endHourHandler[0], hour.end)
-  await page.waitForTimeout(3000)
+  await handleXPathOperation(
+    `/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[2]/div/div[1]/div/div[2]/div/div[2]/div[1]/div[1]/div/label/div[1]/div/input`,
+    page,
+    `${hour.beggining}`
+  )
+  await handleXPathOperation(
+    `/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[1]/div[2]/div[2]/span[1]/div/div[1]/div/div[2]/div/div[1]/div/div[2]/div/div[2]/div[2]/div[1]/div/label/div[1]/div/input`,
+    page,
+    `${hour.end}`
+  )
 }
 
 const submitEventCalendar = async (page) => {
-  await page.waitForTimeout(3000)
-  let submitButtonHandler = await page.$x(`/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[2]/div[2]`)
-  await page.evaluate(el => el.click(), submitButtonHandler[0])
+  await handleXPathOperation(
+    `/html/body/div[4]/div/div/div[2]/span/div/div[1]/div[3]/div[2]/div[2]`,
+    page
+  )
 }
 
 const calendarOperations = async (browser, page) => {
@@ -97,6 +120,7 @@ const calendarOperations = async (browser, page) => {
   await page.click('.u5sQsb')
   await page.waitForXPath(`/html/body/div[2]/div[1]/div[1]/div[1]/button/span[2]`)
   await setDateAndEventName(page)
+  await page.waitForTimeout(500)
   await setBegginingAndEndHours(page)
   await submitEventCalendar(page)
   await browser.close();
@@ -115,6 +139,6 @@ app.get('/calendar', async (req, res) => {
   }
 })
 
-app.listen(3000, (req, res) => {
+app.listen(3000, () => {
   console.log("Server listening on port 3000 🦥")
 })
