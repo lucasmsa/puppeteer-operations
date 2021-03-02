@@ -1,5 +1,5 @@
 require('dotenv/config')
-const { date, eventName, hour } = require('../utils')
+const { date, eventName, hour, handleXPathOperation } = require('../utils')
 const puppeteer = require('puppeteer')
 const { Router } = require('express')
 
@@ -15,17 +15,6 @@ const loginToGoogle = async (browser, page) => {
   await page.waitForTimeout(1000)
   await page.type('input[type=password][name=password]', process.env.PASSWORD)
   await page.click('.VfPpkd-RLmnJb')
-}
-
-const handleXPathOperation = async (xpath, page, text='') => { 
-  await page.waitForXPath(xpath)
-  let handler = await page.$x(xpath)
-  if (!text.length) await handler[0].click()
-  else {
-    await handler[0].focus()
-    await page.waitForTimeout(500)
-    await handler[0].type(text, {delay: 20})
-  }
 }
 
 const setDateAndEventName = async (page) => {

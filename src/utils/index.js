@@ -1,8 +1,12 @@
 var format = require('date-fns/format')
+const { handleXPathOperation } = require('./handleXPathOperation')
 
 const user = {
   name: 'luvas',
   email: 'luvas@gmail.com',
+  phone: '99284-7375',
+  specificDoubt: "como é que faço",
+  partnerType: 'parceiroRepresentante'
 }
 const companyInfo = {
   sector: 'Metal',
@@ -10,6 +14,7 @@ const companyInfo = {
   knowOtherPartnerProduct: 'Não'
 }
 const products = {
+  type: 'falarComConsultor',
   tech: 'squad',
   section: 'apresentacaoDeProdutos'
 }
@@ -27,5 +32,6 @@ module.exports = {
   date,
   hour,
   eventName,
-  companyInfo
+  companyInfo,
+  handleXPathOperation
 }

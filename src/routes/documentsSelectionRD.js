@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer')
 const { Router } = require('express')
-const { user, products, companyInfo } = require('../utils')
+const { user, products, companyInfo, handleXPathOperation } = require('../utils')
 const documentsRouter = Router()
 
 documentsRouter.get('/documents', async (req, res) => {
@@ -8,32 +8,50 @@ documentsRouter.get('/documents', async (req, res) => {
     const browser = await puppeteer.launch({ headless: false })
     const page = await browser.newPage()
     await page.goto('https://forms.rdstation.com.br/chatbot-produtos-a31b6d9833561a1ba3ff')
+    const formType = {
+      agendarReuniao: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[1]/div[1]/label/input',
+      envioDeDocumentos: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[1]/div[2]/label/input',
+      newsletter: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[1]/div[3]/label/input',
+      falarComConsultor: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[1]/div[4]/label/input',
+      queroSerParceiro: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[1]/div[5]/label/input'
+    }
     const desiredProduct = {
-      unity: page.click('#rd-radio_buttons_field-ndAzGNhldU99Q8AwsgoU_Q_Unity'),
-      telflex: page.click('#rd-radio_buttons_field-ndAzGNhldU99Q8AwsgoU_Q_Telflex'),
-      squad: page.click('#rd-radio_buttons_field-ndAzGNhldU99Q8AwsgoU_Q_Squad')
+      unity: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[5]/div[1]/label/input',
+      telflex: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[5]/div[2]/label/input',
+      squad: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[5]/div[3]/label/input'
     }
     const documentsSelection = {
-      apresentacaoDeProdutos: page.click('#rd-radio_buttons_field-phGUw-prSznqZNxj39Lg8Q_Apresentação_de_produtos'),
-      folhaDeDados: page.click('#rd-radio_buttons_field-phGUw-prSznqZNxj39Lg8Q_Folha_de_dados'),
-      descricaoDeProdutos: page.click('#rd-radio_buttons_field-phGUw-prSznqZNxj39Lg8Q_Descrição_de_produtos'),
-      manualDoUsuario: page.click('#rd-radio_buttons_field-phGUw-prSznqZNxj39Lg8Q_Manual_do_usuário'),
-      manualDoAdmin: page.click('#rd-radio_buttons_field-phGUw-prSznqZNxj39Lg8Q_Manual_do_admin'),
-      newsletter: page.click('#rd-radio_buttons_field-phGUw-prSznqZNxj39Lg8Q_Newsletter')
+      apresentacaoDeProdutos:  '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[6]/div[1]/label/input',
+      folhaDeDados: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[6]/div[2]/label/input',
+      descricaoDeProdutos: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[6]/div[3]/label/input',
+      manualDoUsuario: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[6]/div[4]/label/input',
+      manualDoAdmin: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[6]/div[5]/label/input',
     }
-    await page.waitForTimeout(500)
-    await page.$eval('#rd-text_field-3_-5y7no0_FHMDrHnCMV9Q', (el, user) => el.value = user.name, user)
-    await page.$eval('#rd-email_field-R-hSapwS9toeXNu_CtCoEg', (el, user) => el.value = user.email, user)
-    await desiredProduct[products.tech]
-    await documentsSelection[products.section]
-    await page.$eval('#rd-text_field-wBwRoOG9OwKtkGPmudqIaA', (el, companyInfo) => el.value = companyInfo.sector, companyInfo)
-    await page.$eval('#rd-text_field-DGVqHl-V6rkhng3e2h9-eQ', (el, companyInfo) => el.value = companyInfo.numberOfCollaborators, companyInfo)
-    await page.$eval('#rd-text_field-sDZSEu6M0kRdDcyFUzPNog', (el, companyInfo) => el.value = companyInfo.knowOtherPartnerProduct, companyInfo)
+    const partnershipType = {
+      parceiroIntegrador: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[10]/div[1]/label/input',
+      parceiroRepresentante: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[10]/div[2]/label/input',
+      parceiroConsultor: '/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[10]/div[3]/label/input'
+    }
+
+    await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[2]/input', page, user.name)
+    await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[3]/input', page, user.email)
+    if (products.section) {
+      await handleXPathOperation(desiredProduct[products.tech], page)
+      await handleXPathOperation(documentsSelection[products.section], page)
+    }
+    if (products.type === 'agendarReuniao' || 'falarComConsultor' || 'queroSerParceiro') {
+      await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[7]/input', page, companyInfo.sector)
+      if (products.type !== 'queroSerParceiro') await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[8]/input', page, companyInfo.numberOfCollaborators)
+      await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[4]/div/input', page, user.phone)
+    }
+    (products.type === 'falarComConsultor') && await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[11]/textarea', page, user.specificDoubt)
+    (products.type === 'queroSerParceiro') && await handleXPathOperation(partnershipType[user.partnerType], page)
+    await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[9]/input', page, companyInfo.knowOtherPartnerProduct)
     await Promise.all([
       page.waitForNavigation(),
       page.click('#rd-button-kljctmtk')
     ])
-    await page.waitForTimeout(2000)
+    await page.waitForTimeout(10000)
     await browser.close();
     res.json({ ok: '🦫'})
   } catch (err) {
