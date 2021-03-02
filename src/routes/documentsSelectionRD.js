@@ -44,15 +44,17 @@ documentsRouter.get('/documents', async (req, res) => {
       if (products.type !== 'queroSerParceiro') await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[8]/input', page, companyInfo.numberOfCollaborators)
       await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[4]/div/input', page, user.phone)
     }
-    (products.type === 'falarComConsultor') && await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[11]/textarea', page, user.specificDoubt)
-    (products.type === 'queroSerParceiro') && await handleXPathOperation(partnershipType[user.partnerType], page)
+    if (products.type === 'falarComConsultor') await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[11]/textarea', page, user.specificDoubt)
+    if (products.type === 'queroSerParceiro') await handleXPathOperation(partnershipType[user.partnerType], page)
+
     await handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[1]/div[9]/input', page, companyInfo.knowOtherPartnerProduct)
     await Promise.all([
       page.waitForNavigation(),
-      page.click('#rd-button-kljctmtk')
+      handleXPathOperation('/html/body/section/div/div/section/div[2]/div/div/div[1]/form/div[2]/button', page)
     ])
+
     await page.waitForTimeout(10000)
-    await browser.close();
+    await browser.close()
     res.json({ ok: '🦫'})
   } catch (err) {
     console.error(err)
